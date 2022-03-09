@@ -1,0 +1,27 @@
+﻿{
+   "manifest_version": 2,
+   "name": "Copy Paster",
+   "version": "1.0",
+   "description": "Копируем данные с даму мед",
+   "icons": {
+       "128": "128.png"
+   },
+	"background": {
+		"persistent": false,
+		"scripts": ["background.js"]
+	},
+   "content_scripts": [
+       {
+           "matches": [ "https://doc-alm.dmed.kz/PregnancyModule/*" ],
+           "js": [ "thirdParty/jquery-360min.js", "content.js" ],
+		   "run_at": "document_idle",
+			"all_frames": false
+       }
+   ],
+   "page_action": {
+		"default_title": "Test Extension",
+		"default_icon": "icon.png",
+		"default_popup": "popup.html"
+	},
+	"permissions": ["activeTab"]
+}

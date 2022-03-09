@@ -1,0 +1,27 @@
+﻿{
+   "manifest_version": 2,
+   "name": "Copy Card",
+   "version": "1.0",
+   "description": "Открытие карточки для евразийского банка",
+   "icons": {
+       "128": "128.png"
+   },
+	"background": {
+		"persistent": false,
+		"scripts": ["background.js"]
+	},
+   "content_scripts": [
+       {
+           "matches": [ "https://demov5_kz.hostedcc.ru/*" ],
+           "js": [ "thirdParty/jquery-360min.js", "content.js" ],
+		   "run_at": "document_idle",
+			"all_frames": false
+       }
+   ],
+   "page_action": {
+		"default_title": "Copy Card",
+		"default_icon": "icon.png",
+		"default_popup": "popup.html"
+	},
+	"permissions": ["activeTab"]
+}

@@ -1,0 +1,37 @@
+VBA make call
+
+*in general*
+
+Public Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" ( _
+    ByVal hwnd As Long, _
+    ByVal lpOperation As String, _
+    ByVal lpFile As String, _
+    ByVal lpParameters As String, _
+    ByVal lpDirectory As String, _
+    ByVal nShowCmd As Long) As Long
+    
+    
+Declare PtrSafe Function FindWindow Lib "user32.dll" Alias "FindWindowA" ( _
+    ByVal lpClassName As String, _
+    ByVal lpWindowName As String) As Long
+    
+    
+
+Public Sub RunApp()
+hwnd = FindWindow(vbNullString, "MainWindow")
+
+phone = DLookup("[Номер телефона]", "Карточка (беременная)", "Код = " _
+                & Forms![Карточка]!Код)
+
+start_doc = ShellExecute(hwnd, "open", "C:\bp\dotnettest\WpfApp2bin-03-09-21\WpfApp2.exe", phone, 0, 1)
+
+
+End Sub
+
+
+
+*in button*
+
+Public Sub Вызов_Click()
+RunApp
+End Sub

@@ -1,0 +1,13 @@
+select mb.*, c.agent_disposition_name, c.agent_disposition_notes, c.start_time, c.talk_time, c.caller_login_id, c.global_interaction_id, c.pkid
+from main_base as mb 
+inner join call_detail as c on c.original_destination_phone like concat('%', mb.phone1, '%')
+into OUTFILE '/var/lib/mysql-files/test.csv' 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'; 
+
+
+select mb.*, c.agent_disposition_name, c.agent_disposition_notes, c.start_time, c.talk_time, c.caller_login_id, c.global_interaction_id, c.pkid
+from main_base as mb 
+inner join call_detail as c on c.original_destination_phone like concat('%', mb.phone1, '%')
+limit 10;

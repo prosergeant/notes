@@ -1,0 +1,6 @@
+https://crm.it-ticket.kz/$(item.customerPhone)/?operator=$(user.loginId)
+
+https://medcrm.karpets.pro/form/$(item.customerPhone)?giid=$(item.globalInteractionId)&iid=$(item.interactionId)&destination=$(destination)&direction=out&service=$(service.name)&server=$(app.tenantName)&language=ru
+
+http://192.168.0.30:8000/$(item.customerPhone)
+

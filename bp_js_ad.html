@@ -1,0 +1,38 @@
+ <!DOCTYPE html>
+ <html lang="en">
+     <head>
+         <meta charset="UTF-8">
+         <title>AgentDesktop SDK Example</title><!--This is a test HTML page.-->
+ 
+         <script type="text/javascript" src="https://demov5_kz.hostedcc.ru/agentdesktop/libs/servicepattern-sdk-v1.js"> </script>
+     </head>
+     <body>
+         
+ 
+ <iframe id="repeater" style="position:absolute; right: 8px; width: 300px; height: 700px;" src="https://demov5_kz.hostedcc.ru/agentdesktop/UniversalRepeater.jsp"></iframe>
+ 
+ <button onclick="bpspat.api.getState(log)">Get State</button>
+ <br>
+ <br> 
+ <button onclick="bpspat.api.setStatus('READY')">Go to Ready</button>
+ <br>
+ <br>
+ <button onclick="bpspat.api.setStatus('NOT_READY','Lunch')">Lunchtime</button>
+ <br>
+ <br>
+ <button onclick="bpspat.api.setStatus('NOT_READY','Break')">Take a Break</button>
+ <br>
+ <br>
+ 
+ <div id="log">Logs...</div>
+ 
+ <script type="text/javascript">
+ window.bpspat.api.init("https://demov5_kz.hostedcc.ru");
+ function log(data) {
+ let div = document.createElement("div");
+ div.innerHTML = JSON.stringify(data);
+ document.getElementById("log").appendChild(div);
+ }
+ </script>
+     </body>
+ </html>

@@ -1,0 +1,46 @@
+>>> from django.contrib.auth.models import Group
+>>> from django.contrib.auth.models import User 
+>>> buyer = Group.objects.get(name__contains='Buyer')
+>>> buyer.permissions.all()
+<QuerySet [<Permission: auction | bets | Can view bets>, <Permission: auction | city | Can view city>, <Permission: auction | company | Can view company>, <Permission: auction | country | Can view country>, <Permission: auction | lot | Can view lot>, <Permission: auction | state | Can view state>]>       
+
+
+>>> buyer_ur = Group.objects.create(name='Buyer ur')
+>>> buyer_perms = [i.id for i in buyer.permissions.all()]       
+>>> buyer_perms
+[52, 32, 40, 28, 48, 36]
+>>> buyer_ur.permissions.set(buyer_perms)
+>>> buyer_ur.save()
+>>> 
+
+
+user = User.objects.get(id=2)
+buyer = Buyer.objects.get(user_id=user)
+bets = Bets.objects.filter(buyer=buyer) 
+names = [i.lot_id.stuff_name for i in bets] 
+names = set(names)
+
+
+
+'select_registration_type': ['Buyer'], 
+'user_type': ['fiz'], 
+'last_name': ['test'], 
+'first_name': ['test1'], 
+'phone1': ['+77066070796'], 
+'email': ['sberendeyev@gmail.com'], 
+'password': ['12345'], 
+'confirm_password': ['12345'], 
+'number_account': ['7'], 
+'file_register_company': [''], 
+'file_debt_tax': [''], 
+'file_debt': [''], 
+'file_nds': [''], 
+'company_name': ['Название123'], 
+'city': [''], 
+'country': ['Kazakstan'], 
+'company_address': [''], 
+'company_state': [''], 
+'bin': [''], 
+'phone2': [''], 
+'bank_name': [''], 
+'iban': ['']}>

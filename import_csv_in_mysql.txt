@@ -1,0 +1,5 @@
+mysqlimport --ignore-lines=1 \
+            --fields-terminated-by=';' \
+            --local -u root \
+            -pzzzxxxccc pravost_report \
+             main_base_v2.csv

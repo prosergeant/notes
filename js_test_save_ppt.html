@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+<title>Our Funky HTML Page</title>
+<meta name="description" content="Our first page">
+<meta name="keywords" content="html tutorial template">
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.9.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.9.0/libs/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.9.0/dist/pptxgen.min.js"></script>
+</head>
+<body>
+Content goes here.
+
+<button onclick="ppt();"> ppt </button>
+
+<br>
+
+<table id="table_id">
+    <tr>
+        <th> id </th>
+        <th> name </th>
+        <th> hp </th>
+    </tr>
+    
+    <tr>
+        <td> 1 </td>
+        <td> test </td>
+        <td> 100 </td>
+    </tr>
+    
+    <tr>
+        <td> 2 </td>
+        <td> shmest </td>
+        <td> 100 </td>
+    </tr>
+</table>
+
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+
+
+<script>
+
+    function ppt() {
+        // 1. Create a new Presentation
+        let pres = new PptxGenJS();
+
+        // 2. Add a Slide
+        let slide = pres.addSlide();
+
+        // 3. Add one or more objects (Tables, Shapes, Images, Text and Media) to the Slide
+        slide.addText("Super puper power point file", {
+            x: 1.5,
+            y: 1.5,
+            color: "363636",
+            fill: { color: "F1F1F1" },
+            align: pres.AlignH.center,
+        });
+        
+        
+        //let slide2 = pres.addSlide();
+        pres.tableToSlides('table_id');
+        
+        // 4. Save the Presentation
+        pres.writeFile({ fileName: "Sample Presentation.pptx" });
+    }
+</script>
+
+</body>
+</html>

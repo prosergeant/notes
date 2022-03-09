@@ -1,0 +1,47 @@
+CREATE TABLE `recordings_detail` (
+  `start_time` datetime DEFAULT NULL,
+  `agent_loginid` varchar(100) DEFAULT NULL,
+  `agent_first_name` varchar(100) DEFAULT NULL,
+  `agent_last_name` varchar(100) DEFAULT NULL,
+  `customer_phone` varchar(100) DEFAULT NULL,
+  `direction` varchar(100) DEFAULT NULL,
+  `service` varchar(100) DEFAULT NULL,
+  `disposition` varchar(100) DEFAULT NULL,
+  `notes` varchar(100) DEFAULT NULL,
+  `voice_signature` varchar(100) DEFAULT NULL,
+  `flagged` varchar(100) DEFAULT NULL,
+  `talk_time` varchar(100) DEFAULT NULL,
+  `export_status` varchar(100) DEFAULT NULL,
+  `recordingid` varchar(100) DEFAULT NULL,
+  `giid` varchar(100) DEFAULT NULL,
+  `revirew_url` varchar(100) DEFAULT NULL,
+  `screen_recording` varchar(100) DEFAULT NULL,
+  `type` varchar(100) DEFAULT NULL,
+  `pure_talk_time` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
+
+
+,,,,,,,,,,,,,,,,,,,
+
+CREATE TABLE recordings_detail_v2 (
+	someid int,
+    start_time character varying(123) NOT NULL,
+    agent_loginid character varying(123) NOT NULL,
+    agent_first_name character varying(123),
+    agent_last_name character varying(123),
+    customer_phone character varying(123),
+    direction character varying(123),
+    service character varying(123),
+    disposition character varying(123),
+    notes character varying(123),
+    voice_signature character varying(123),
+    flagged character varying(123),
+    talk_time character varying(123),
+    export_status character varying(123),
+    recordingid character varying(123),
+    giid character varying(123),
+    review_url character varying(123),
+    screen_recording character varying(123),
+    type character varying(20),
+    pure_talk_time character varying(20)
+);

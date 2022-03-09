@@ -1,0 +1,43 @@
+server {
+   server_name 185.68.21.251;
+
+   access_log /home/john/logs/nginx-access.log;
+   error_log /home/john/logs/nginx-error.log;
+
+   root /home/john/frontend/;
+
+   client_max_body_size 10M;
+
+   location /static { # Serve the statics of backend
+      alias /home/john/static;
+   }
+
+    location /media { # Serve the media of backend
+        alias /home/john/static/images;
+    }
+   location / { # Catch all but defined routes to serve the frontend
+                try_files $uri $uri/ /index.html;
+   }
+
+   location ^~ /api/ { # Define routes to be directed to backend as proxy
+      include proxy_params;
+      proxy_pass http://0.0.0.0:8000;
+   }
+
+	location ^~ /upload/ {
+        	include proxy_params;
+        	proxy_pass http://0.0.0.0:8000/upload/;
+   	}
+
+
+        location ^~ /admin {
+                include proxy_params;
+                proxy_pass http://0.0.0.0:8000;
+        }
+
+        location ^~ /sitemap.xml { # For example if you use django.contrib.sitemaps
+                include proxy_params;
+                proxy_pass http://0.0.0.0:8000;
+        }
+
+}

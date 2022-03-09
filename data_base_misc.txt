@@ -1,0 +1,319 @@
+
+test_serv
+postgresql data
+host: 91.201.215.27
+port: 5432
+name: mdc_local
+user: db_user
+password: 3sWeDse5hb
+
+
+host: 91.201.215.27
+port: 5432
+name: skf_copy
+user: skf_user
+password: skf_password
+
+#skf cloudcontact
+host: 91.201.215.27
+port: 3306
+name: skf_cloud_base
+user: skf_cloud_user
+pass: skf_cloud_password
+
+#правоСТ бд
+'NAME': 'st',
+'USER' : 'st_user',
+'PASSWORD' : 'st_password',
+'HOST' : '91.201.215.27',
+'PORT' : '5432',
+
+#tmc cloud contact
+name: tmc_cloud
+user: tmc_user
+pass: 2En9Lfyc2NY4mkJ
+host: 91.201.215.27
+port: 3306
+
+#Доступ к БД ТТК
+185.102.73.206:33310
+Название базы данных: 6g_kz
+Имя пользователя: 6g_kz
+Пароль: cjh3474FJy3rH@R^vdf
+
+#ttk cloudcontact
+host: 91.201.215.27
+port: 3306
+name: ttk_cloud_base
+user: skf_cloud_user
+pass: skf_cloud_password
+
+# Доступы для подключения к базе данных контакт центра ТМЦ
+база cloudcontact для ТМЦ 
+ хост 185.102.73.206
+ порт 33307
+ пользователь bpm_cc_hostedcc_
+ пароль d7rHJDFK378
+ имя базы данных bpm_cc_hostedcc_ru
+
+Driver={PostgreSQL Unicode(x64)};Server=91.201.215.27;Port=5432;Database=skf_copy;
+
+#ssh tunel
+ssh -N -L 3336:212.24.36.250:3306 root@95.59.124.142
+
+посмотреть базу
+Первый вход в систему как пользователь postgres:
+sudo su - postgres
+подключиться к требуемому db: psql -d databaseName
+\dt вернет список всей таблицы в базе данных, к которой вы подключены.
+
+
+#если на тунельном сервере не запускается docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)"  -o /usr/local/bin/docker-compose
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo chmod +x /usr/bin/docker-compose
+
+
+# рабочий способ
+pg_dump -U powerbi mdc -f dump.sql -h 185.102.73.206 -p 33308 -W -n public -t test_bi_v_copy
+
+PGPASSWORD="1q2w3e4r_02" pg_dump --no-owner -h 185.102.73.206 -p 33308 -U powerbi mdc -n public -t test_bi_v_copy > file.sql
+
+
+# не работают но может пригодится
+pg_dump -C -h 127.0.0.1 -U db_user mdc_local | psql -h 185.102.73.206 -p 33308 -U powerbi mdc
+pg_dump -C -h 185.102.73.206 -p 33308 -U powerbi mdc -n public -t test_bi_v_copy | psql -h 127.0.0.1 -U db_user mdc_local
+
+
+# mysql
+mysqldump --host=185.102.73.206 --port=33307 --user=bpm_cc_hostedcc_ "bpm_cc_hostedcc_ru" "call_detail" -p --single-transaction --no-tablespaces > database.sql
+
+
+
+
+
+#download file from python view
+curl http://91.201.215.27:8888/csv/test/ --output test.csv
+
+#скрипт для копирования базы данных с mdc, копирование на сервер и внедрение в локальную бд
+#!/bin/bash
+
+echo "connect to mdc"
+PGPASSWORD=1q2w3e4r_02 psql -h 185.102.73.206 -p 33308 -U powerbi mdc -c "DROP TABLE test_bi_v_copy;
+CREATE TABLE test_bi_v_copy AS SELECT * FROM mdc.test_bi_v"
+echo "mdc_local table updated"
+echo "try download db"
+PGPASSWORD="1q2w3e4r_02" pg_dump --no-owner -h 185.102.73.206 -p 33308 -U powerbi mdc -n public -t test_bi_v_copy > file.sql
+if [ -s file.sql ]
+then
+        echo "load new dump"
+        PGPASSWORD=3sWeDse5hb psql -h 127.0.0.1 -U db_user mdc_local -c "DROP TABLE test_bi_v_copy"
+        echo "mdc_local drop table"
+        PGPASSWORD=3sWeDse5hb psql -h 127.0.0.1 -U db_user mdc_local < /home/rainbow/file.sql
+        echo "new table created & updated"
+        echo "done"
+else
+        echo "file.sql = 0 byte"
+        echo "abort"
+fi
+
+
+
+#отправка файла с сервера на сервер
+scp skf.sql rainbow@91.201.215.27:~/skf.sql
+
+#скрипт для копирования бд ск фармации и отправки на наш сервер #sendme.sh
+#!/bin/bash
+
+echo "remove previus dump if exist"
+rm skf.sql
+echo "create dump"
+PGPASSWORD="skPassword7$" pg_dump --no-owner -h 127.0.0.1 -U skf_user skf_database > skf.sql
+
+if [ -s skf.sql ]
+then
+        echo "sending to our server"
+        sshpass -p 'Neek7sae' scp skf.sql rainbow@91.201.215.27:~/skf.sql
+        echo "done"
+else
+        echo "skf.sql is empty, not send"
+fi
+
+
+# получения базы ск фармации на нашем сервере #update_skf.sh
+#!/bin/bash
+if [ -s skf.sql ]
+then
+        echo "drop schema & create new"
+        PGPASSWORD=skf_password psql -h 127.0.0.1 -U skf_user skf_copy -c "drop schema public cascade;
+        create schema public"
+
+        echo "update skf_copy database"
+        PGPASSWORD=skf_password psql -h 127.0.0.1 -U skf_user skf_copy < /home/rainbow/skf.sql
+        echo "done"
+else
+        echo "skf.sql = 0 byte"
+        echo "abort"
+fi
+
+
+
+#скрипт для копирования базы контакт центра скф
+#!/bin/bash
+
+echo "download database skf cloud contact"
+mysqldump --host=skf-data-proxy.karpets.pro --port=33307 --user=skfcloudcall_hos "skfcloudcall_hostedcc_ru" --password=dbg54FEDsv --single-transaction --no-tablespaces --column-statistics=0 > skf_cloud.sql
+
+if [ -s skf_cloud.sql ]
+then
+
+	echo "drop all tables in skf_cloud_base"
+
+	echo "SET FOREIGN_KEY_CHECKS = 0;" > ./temp.sql
+	mysqldump --add-drop-table --no-data -u skf_cloud_user --password=skf_cloud_password skf_cloud_base | grep 'DROP TABLE' >> ./temp.sql
+	echo "SET FOREIGN_KEY_CHECKS = 1;" >> ./temp.sql
+	mysql -u skf_cloud_user --password=skf_cloud_password skf_cloud_base < ./temp.sql
+	
+	echo "import new data in skf_cloud_base"
+	mysql -u skf_cloud_user skf_cloud_base --password=skf_cloud_password < skf_cloud.sql
+else
+    echo "skf_cloud.sql = 0 byte"
+    echo "abort"
+fi
+
+
+
+
+# вывести все названия таблиц
+select 'drop table if exists "' || tablename || '" cascade;'
+from pg_tables
+where schemaname = 'public';
+
+
+
+ 
+ 
+# показать количество дубликатов
+SELECT patient_id, COUNT(id)
+FROM mdc_report
+GROUP BY patient_id
+HAVING COUNT(id) > 1
+ORDER BY COUNT(id);
+
+# удалить дубликаты ( оставляет последние добавленные )
+DELETE
+FROM mdc_report A USING mdc_report B
+WHERE A.patient_id=B.patient_id AND A.id<B.id;
+ 
+
+#call_detail_cs
+#skf powerbi query
+SELECT c.*, s.cs
+FROM call_detail as c
+LEFT JOIN interaction_steps as is2 on c.callee_interaction_step_id = is2.id
+left join interactions as i on is2.interaction_id = i.id
+left join surveys as s on i.id = s.interaction_id;
+
+# interactions quality
+SELECT i.*, iqm.review_agent_login_id, iqm.review_notes, iqmg.grade_name, iqmg.grade_value 
+FROM interaction_steps as i 
+LEFT JOIN interaction_quality_monitoring as iqm ON iqm.interaction_step_id = i.id 
+left join interaction_quality_monitoring_grades as iqmg on iqmg.iqm_id = iqm.id;
+
+
+#для брайтпатерна, вытаскивать оценки операторов которые ставит супервайзер
+# в SQL
+SELECT i.login_id, i.first_name, i.last_name, i.start_time, i.end_time, iqm.review_notes, iqmg.grade_name, iqmg.grade_value 
+FROM interaction_steps as i 
+LEFT JOIN interaction_quality_monitoring as iqm ON iqm.interaction_step_id = i.id 
+left join interaction_quality_monitoring_grades as iqmg on iqmg.iqm_id = iqm.id
+WHERE i.start_time >= '2021-07-31 18:00:00' and i.end_time < '2021-10-31 18:00:0'
+AND i.team_name = "АктивКоллекшн"
+GROUP BY i.login_id, i.first_name, i.last_name, iqmg.grade_name
+ORDER BY i.login_id;
+
+# в bpxml
+<?xml version="1.0" encoding="UTF-8"?>
+<BPcsvReport version="1.0" resourceBundle="com.brightpattern.reports.oob_reports">
+  <parameters>
+    <parameter name="start_time" type="timeframe" subtype="start"/>
+    <parameter name="end_time" type="timeframe" subtype="end"/>
+    <parameter name="team_name" type="team" />
+  </parameters>
+	<queryString>
+		<![CDATA[
+SELECT i.login_id, i.first_name, i.last_name, i.start_time, i.end_time, iqm.review_notes, iqmg.grade_name, iqmg.grade_value 
+FROM interaction_steps as i 
+LEFT JOIN interaction_quality_monitoring as iqm ON iqm.interaction_step_id = i.id 
+left join interaction_quality_monitoring_grades as iqmg on iqmg.iqm_id = iqm.id
+WHERE i.start_time >= $P{start_time} and i.end_time < $P{end_time}
+AND i.team_name = $P{team_name}
+GROUP BY i.login_id, i.first_name, i.last_name, iqmg.grade_name
+ORDER BY i.login_id
+]]>
+  </queryString>
+</BPcsvReport>
+
+
+#скопировать создание базы в постгре
+pg_dump -st tablename dbname
+
+#скопировать создание базы в mysql
+SHOW CREATE TABLE tablename;
+
+#load local files in mysql
+SET GLOBAL local_infile=1;
+
+#import to mysql from csv
+mysqlimport --ignore-lines=1 \
+            --fields-terminated-by=',' \
+            --local -u root \
+            -p pravost_report \
+             call_detail.csv
+			 
+			 
+#объеденить 2 таблицы и выгрузить в файл
+select mb.*, c.agent_disposition_name, c.agent_disposition_notes, c.start_time, c.talk_time, c.caller_login_id, c.global_interaction_id, c.pkid
+from main_base as mb 
+inner join call_detail as c on c.original_destination_phone like concat('%', mb.phone1, '%')
+into OUTFILE '/var/lib/mysql-files/test.csv' 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'; 
+
+
+#giid убрать дефисы и добавить 0x вначало и добавить новую колонку с этими данными
+CREATE view rg_hexed as
+SELECT e.*, CONCAT('0x', REPLACE(e.giid, '-', '')) as hexed, right(e.customer_phone , 10) as w_prefix
+FROM recordings_detail as e;
+
+#объеденить два списка правоСТ
+# можно использовать inner join чтобы показать только те которые совпали
+SELECT mb.*, rd.*
+from rg_hexed as rd 
+left join main_base as mb 
+on mb.phone1 = rd.w_prefix
+or mb.phone2 = rd.w_prefix
+or mb.phone3 = rd.w_prefix
+or mb.phone4 = rd.w_prefix
+or mb.phone5 = rd.w_prefix
+or mb.phone6 = rd.w_prefix
+or mb.phone7 = rd.w_prefix;
+
+
+
+
+#python обьединение csv файлов в один
+import pandas as pd
+import os, csv
+
+directory = os.listdir(os.getcwd() + '//panda')
+
+df = pd.DataFrame()
+
+for file in directory:
+	fpath = 'C:\\bp\\pravoST\\reports\\panda\\'
+	df_temp = pd.read_csv(fpath+file)
+	df = df.append(df_temp)
+
+df.to_csv('zzz.csv')

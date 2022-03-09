@@ -1,0 +1,63 @@
+server {
+   server_name vetplus.kz;
+
+   access_log /home/john/logs/nginx-access.log;
+   error_log /home/john/logs/nginx-error.log;
+
+   root /home/john/frontend/;
+
+   client_max_body_size 10M;
+
+   location /static { # Serve the statics of backend
+      alias /home/john/static;
+   }
+
+   location /media {
+     alias /home/john/static/images/upload; # Change to your own media directory here.
+     access_log off;
+   }
+
+   location / { # Catch all but defined routes to serve the frontend
+                try_files $uri $uri/ /index.html;
+   }
+
+   location ^~ /api/ { # Define routes to be directed to backend as proxy
+      include proxy_params;
+      proxy_pass http://0.0.0.0:8000;
+   }
+
+   location ^~ /upload/ {
+	include proxy_params;
+	proxy_pass http://0.0.0.0:8000/upload/;
+   }
+
+        location ^~ /admin {
+                include proxy_params;
+                proxy_pass http://0.0.0.0:8000;
+        }
+
+        location ^~ /sitemap.xml { # For example if you use django.contrib.sitemaps
+                include proxy_params;
+                proxy_pass http://0.0.0.0:8000;
+        }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/vetplus.kz-0001/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/vetplus.kz-0001/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = vetplus.kz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+   listen 80;
+   server_name vetplus.kz;
+    return 404; # managed by Certbot
+
+
+}
