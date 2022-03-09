@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+
+python /code/manage.py collectstatic --noinput
+python /code/manage.py migrate --noinput
+
+/usr/local/bin/gunicorn evraz.wsgi --bind 0.0.0.0:1006 --chdir=/code --timeout=3000

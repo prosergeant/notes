@@ -1,0 +1,150 @@
+# Actual web server pools
+upstream webagentdesktop {
+	server srv03.hostedcc.ru:7443 fail_timeout=300;
+	server srv04.hostedcc.ru:7443 fail_timeout=300;
+        server srv01.hostedcc.ru:7443 fail_timeout=300 backup;
+        server srv02.hostedcc.ru:7443 fail_timeout=300 backup;
+	ip_hash;
+}
+upstream webportal {
+	server srv03.hostedcc.ru:7082 fail_timeout=300;
+	server srv04.hostedcc.ru:7082 fail_timeout=300; 
+	server srv01.hostedcc.ru:7082 fail_timeout=300 backup;
+	server srv02.hostedcc.ru:7082 fail_timeout=300 backup;
+	ip_hash;
+}
+upstream clientweb {
+	server srv03.hostedcc.ru:7084 fail_timeout=300;
+	server srv04.hostedcc.ru:7084 fail_timeout=300;
+        server srv01.hostedcc.ru:7084 fail_timeout=300 backup;
+	server srv02.hostedcc.ru:7084 fail_timeout=300 backup;
+	ip_hash;
+}
+upstream CloudContactConsole {
+	server sia01.hostedcc.ru:81 fail_timeout=300;
+	#server sia02.hostedcc.ru:81 fail_timeout=300;
+	ip_hash;
+}
+upstream callscript {
+        server callscript.hostedcc.ru:443 fail_timeout=300;
+        ip_hash;
+}
+
+# ---------------- Unsecure HTTP -----------------------------
+server {
+	listen 80 default_server;
+	server_name srv04.hostedcc.ru;
+	proxy_buffers 8 1m;
+	client_max_body_size 0;
+	proxy_connect_timeout 5;
+	proxy_next_upstream error timeout http_503;
+	proxy_set_header Host $host;
+	proxy_set_header X-Real-IP $remote_addr;
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	location / {
+		#return 301 http://$host/agentdesktop$request_uri;
+		# To force https comment out the previous line and uncomment this one
+		#
+		return 301 https://$host$request_uri;
+	}
+	location /nginx_status {
+        	# Turn on nginx stats
+        	stub_status on;
+
+        	# I do not need logs for stats
+        	access_log   off;
+
+        	# Security: Only allow access from localhost IP #
+        	allow 127.0.0.1;
+   
+        	# Send rest of the world to /dev/null #
+        	deny all;
+	}
+	location /agentdesktop {
+		#proxy_pass http://webagentdesktop/agentdesktop;
+		# To force https comment out the previous line and uncomment this one
+		#
+		return 301 https://$host$request_uri;
+	}
+	location /statsapi {
+		proxy_pass http://webagentdesktop/statsapi;
+		#
+		return 301 https://$host$request_uri;
+	}
+	location /admin {
+		# Force HTTPS for tenant administration logins
+		return 301 https://$host$request_uri;
+	}
+	location /tenantmgmt {
+		# Force HTTPS for tenant administration logins
+		return 301 https://$host$request_uri;
+	}
+	location /clientweb {
+		# Force HTTPS for client web server (chat) requests
+		return 301 https://$host$request_uri;
+	}
+        location /agentdesktop/wallboard {
+                # Force HTTPS for client web server (wallboard) requests
+                return 301 https://$host$request_uri;
+        }
+	location /CloudContactConsole {
+		# Force HTTPS for Web on SIA requests
+		return 301 https://$host$request_uri;
+	}
+       location ~"/api/(..)(.+)$" {
+                proxy_pass http://callscript/api/$1$2;
+                #
+                return 301 https://$host$request_uri;
+        }
+}
+# ---------------- Secure HTTPS ----------------------------
+server {
+	listen 443 ssl;
+	server_name srv04.hostedcc.ru;
+	ssl_certificate /etc/nginx/conf.d/server.pem;
+	ssl_certificate_key /etc/nginx/conf.d/server.pem;
+	proxy_connect_timeout 5;
+	proxy_next_upstream error timeout http_503;
+	proxy_buffers 16 1m;
+	client_max_body_size 100M;
+	client_body_buffer_size 256k;
+	proxy_set_header Host $host;
+	proxy_set_header X-Real-IP $remote_addr;
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	location / {
+		return 301 https://$host/agentdesktop$request_uri;
+	}
+	location /agentdesktop {
+		proxy_pass https://webagentdesktop/agentdesktop;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+	location /statsapi {
+		proxy_pass https://webagentdesktop/statsapi;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+	location /admin {
+		proxy_pass http://webportal/admin;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+	location /tenantmgmt {
+		proxy_pass http://webportal/tenantmgmt;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+	location /clientweb {
+		proxy_pass http://clientweb/clientweb;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+        location /agentdesktop/wallboard {
+                proxy_pass http://clientweb/clientweb/wallboard;
+                proxy_redirect ~^(http://)(.*) https://$2;
+        }
+	location /CloudContactConsole {
+		proxy_pass http://CloudContactConsole/CloudContactConsole;
+		proxy_redirect ~^(http://)(.*) https://$2;
+	}
+        location ~ ^/(api|static) {
+                proxy_set_header   Host 'callscript.hostedcc.ru';
+                proxy_pass https://callscript/$request_uri;
+                proxy_redirect ~^(http://)(.*) https://$2;
+        }
+}
