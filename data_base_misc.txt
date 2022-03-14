@@ -205,6 +205,11 @@ DELETE
 FROM mdc_report A USING mdc_report B
 WHERE A.patient_id=B.patient_id AND A.id<B.id;
  
+# создает вьюшку где считается возраст от дня рождения 
+create view mr_with_age as select *, 
+( age(current_date, public.test_bi_v_copy.birthday) )
+as patient_age_2
+from public.test_bi_v_copy;
 
 #call_detail_cs
 #skf powerbi query
