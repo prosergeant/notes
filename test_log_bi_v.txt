@@ -1,0 +1,109 @@
+CREATE OR REPLACE VIEW mdc.test_log_bi_v
+AS SELECT p.id AS patient_id,
+    p.iin,
+    p.fio,
+    p.num_crossdoc,
+    i.birthday,
+    p.phone,
+    p.pmsp_start_date,
+    i.date_time,
+    sre.name_ru AS loc_region,
+    i.loc_street,
+    i.loc_home,
+    p.status_end_date,
+    se.name_ru AS status_end,
+    date_part('year'::text, age(i.birthday)) AS patient_age,
+    p.hospitalize_tmc AS refusal_hospitalize_tmc,
+    p.sign_observation_hospital,
+    ms.abrev_rus AS pmsp_name,
+        DECODE(  p.watch_diagnosis
+            , 'U071'::text
+            , 'U07.1'::text
+            , 'U072'::text
+            , 'U07.2'::text
+            , NULL::character varying
+        ) AS diagnosis,
+    p.pcr_result,
+    p.pcr_date_test,
+    p.pcr_date_receipt,
+    p.result_kt,
+    p.kt_date,
+    p.diagnosis_kt,
+    scd.name_ru AS condition_start,
+        DECODE(  p.pcr_reason
+            , 1
+            , 'Самообращение'::text
+            , 2
+            , 'Проф. мероприятия'::text
+            , 3
+            , 'Контактный'::text
+            , NULL::character varying
+        ) AS pcr_reason,
+    concat_ws(', '::text,
+        DECODE(  i.ojirenie
+            , true
+            , 'ожирение'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.serdce
+            , true
+            , 'ХБС'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.astma
+            , true
+            , 'Бр. астма'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.hobl
+            , true
+            , 'ХОБЛ'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.pechen
+            , true
+            , 'ХБПечени'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.pochki
+            , true
+            , 'ХБПочек'::text
+            , NULL::character varying
+        ),
+        DECODE(  i.gema_rast
+            , true
+            , 'Гематологические заболевания'::text
+            , NULL::character varying
+        ), i.other_diagnos) AS other_diagnosis_pmsp,
+    p.presc_therapy,
+    p.lung_damage,
+        DECODE(  i.sex
+            , 1
+            , 'муж'::text
+            , 2
+            , 'жен'::text
+            , NULL::character varying
+        ) AS sex,
+    srg.name_ru AS risk_group,
+        DECODE(  i.pregnancy
+            , 1
+            , '1 триместр '::text
+            , 2
+            , '2 триместр'::text
+            , 3
+            , '3 триместр'::text
+            , ''::text::character varying
+        ) AS pregnancy,
+    p.diagnosis_date,
+    p.date_mobile_brigade,
+    p.date_edit_log
+   FROM g_patient_log p
+     CROSS JOIN g_incident_log i
+     CROSS JOIN s_medic_service ms
+     CROSS JOIN s_region sre
+     LEFT JOIN s_status_end se ON se.id = p.status_end
+     LEFT JOIN s_village sv ON sv.village_id::text = i.village::text
+     LEFT JOIN s_risk_group srg ON srg.id = i.risk_group
+     LEFT JOIN s_condition scd ON scd.id = p.patient_condition_start
+  WHERE p.status > 0::numeric AND i.id = p.incident_id AND p.date_edit_log = i.date_edit_log AND ms.bin::text = p.pmsp_name::text AND sre.postal_code::text = i.loc_region::text AND (p.pmsp_name::text <> ALL (ARRAY['000940003482'::character varying::text, '861240000017'::character varying::text]))
+  ORDER BY p.id DESC;

@@ -1,0 +1,153 @@
+CREATE OR REPLACE VIEW mdc.patient_edit_v
+AS SELECT ed.incident_id,
+    ed.ojirenie,
+    ed.serdce,
+    ed.astma,
+    ed.hobl,
+    ed.pechen,
+    ed.pochki,
+    ed.gema_rast,
+    ed.other_diagnos,
+    ed.ojirenie + ed.serdce + ed.astma + ed.hobl + ed.pechen + ed.pochki + ed.gema_rast + ed.other_diagnos AS sum_edit
+   FROM ( SELECT i.id AS incident_id,
+                CASE
+                    WHEN l.ojirenie = i.ojirenie THEN 0
+                    ELSE 1
+                END AS ojirenie,
+                CASE
+                    WHEN l.serdce = i.serdce THEN 0
+                    ELSE 1
+                END AS serdce,
+                CASE
+                    WHEN l.astma = i.astma THEN 0
+                    ELSE 1
+                END AS astma,
+                CASE
+                    WHEN l.hobl = i.hobl THEN 0
+                    ELSE 1
+                END AS hobl,
+                CASE
+                    WHEN l.pechen = i.pechen THEN 0
+                    ELSE 1
+                END AS pechen,
+                CASE
+                    WHEN l.pochki = i.pochki THEN 0
+                    ELSE 1
+                END AS pochki,
+                CASE
+                    WHEN l.gema_rast = i.gema_rast THEN 0
+                    ELSE 1
+                END AS gema_rast,
+                CASE
+                    WHEN COALESCE(NULL::character varying, l.other_diagnos, ''::character varying)::text = COALESCE(NULL::character varying, i.other_diagnos, ''::character varying)::text THEN 0
+                    ELSE 1
+                END AS other_diagnos
+           FROM ( SELECT il.id,
+                    il.date_time,
+                    il.type_call,
+                    il.type_sess,
+                    il.user_id,
+                    il.phone,
+                    il.lang_id,
+                    il.category_id,
+                    il.ratio_id,
+                    il.resident,
+                    il.agree,
+                    il.fio,
+                    il.fio_lat,
+                    il.birthday,
+                    il.sex,
+                    il.country_id,
+                    il.place_of_birth,
+                    il.iin,
+                    il.citizenship_id,
+                    il.typedoc_id,
+                    il.crossdoc,
+                    il.num_crossdoc,
+                    il.date_crossdoc,
+                    il.loc_country,
+                    il.loc_city,
+                    il.loc_street,
+                    il.loc_home,
+                    il.loc_block,
+                    il.loc_flat,
+                    il.pmsp_name,
+                    il.email,
+                    il.blood_group,
+                    il.rfactor,
+                    il.date_edit,
+                    il.lament,
+                    il.anamnesis,
+                    il.diagnosis,
+                    il.recom,
+                    il.coment,
+                    il.user_edit,
+                    il.status_close,
+                    il.rating,
+                    il.user_close,
+                    il.date_close,
+                    il.social_status,
+                    il.work_place,
+                    il.study_place,
+                    il.date_last_ws,
+                    il.phone_contact,
+                    il.phone_contact_m,
+                    il.pcr,
+                    il.wellbeing,
+                    il.ojirenie,
+                    il.serdce,
+                    il.astma,
+                    il.pechen,
+                    il.pochki,
+                    il.gema_rast,
+                    il.pregnancy,
+                    il.bolvgorle,
+                    il.nasmork,
+                    il.kashel,
+                    il.otdishka,
+                    il.diareya,
+                    il.other_simp,
+                    il.other_diagnos,
+                    il.max_temp,
+                    il.date_f_simp,
+                    il.lab_actv_id,
+                    il.c_contact_zabol,
+                    il.c_contact_covid,
+                    il.c_med_org,
+                    il.c_fio,
+                    il.c_typ_contact,
+                    il.c_date_last,
+                    il.c_date_pcr,
+                    il.c_pcr_result,
+                    il.c_perem,
+                    il.c_perem_bdate,
+                    il.c_perem_edate,
+                    il.c_oblast,
+                    il.c_region,
+                    il.c_city,
+                    il.c_street,
+                    il.c_home,
+                    il.c_flat,
+                    il.c_block,
+                    il.c_index,
+                    il.h_params,
+                    il.village,
+                    il.risk_group,
+                    il.hobl,
+                    il.loc_region,
+                    il.user_id_edit,
+                    il.date_edit_log,
+                    il.hypertension,
+                    il.cancer
+                   FROM g_incident_log il
+                  WHERE (il.date_edit_log IN ( SELECT __unnamed_subquery_0.md
+                           FROM ( SELECT y.id,
+                                    ( SELECT min(g_incident_log.date_edit_log) AS min
+   FROM g_incident_log
+  WHERE g_incident_log.id = y.id) AS md
+                                   FROM g_incident_log y
+                                  GROUP BY y.id, (( SELECT min(g_incident_log.date_edit_log) AS min
+   FROM g_incident_log
+  WHERE g_incident_log.id = y.id))) __unnamed_subquery_0))) l,
+            g_incident i
+          WHERE i.id = l.id) ed;

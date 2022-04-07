@@ -1,0 +1,229 @@
+CREATE OR REPLACE VIEW mdc.patient_baseh_v
+AS SELECT p.id AS p_id,
+    i.id AS incident_id,
+    p.sign_observation_hospital,
+    i.date_time,
+    p.status_end,
+    p.close_date_post AS status_end_date,
+    p.p_close_end,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.ojirenie <> gil.ojirenie)) > current_date THEN i.ojirenie
+            ELSE NULL::boolean
+        END AS ojirenie_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.serdce <> gil.serdce)) > current_date THEN i.serdce
+            ELSE NULL::boolean
+        END AS serdce_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.astma <> gil.astma)) > current_date THEN i.astma
+            ELSE NULL::boolean
+        END AS astma_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.pechen <> gil.pechen)) > current_date THEN i.pechen
+            ELSE NULL::boolean
+        END AS pechen_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.pochki <> gil.pochki)) > current_date THEN i.pochki
+            ELSE NULL::boolean
+        END AS pochki_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.gema_rast <> gil.gema_rast)) > current_date THEN i.gema_rast
+            ELSE NULL::boolean
+        END AS gema_rast_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.pregnancy <> gil.pregnancy)) > current_date THEN i.pregnancy
+            ELSE NULL::numeric
+        END AS pregnancy_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.hobl <> gil.hobl)) > current_date THEN i.hobl
+            ELSE NULL::boolean
+        END AS hobl_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.hypertension <> gil.hypertension)) > current_date THEN i.hypertension
+            ELSE NULL::boolean
+        END AS hypertension_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.cancer <> gil.cancer)) > current_date THEN i.cancer
+            ELSE NULL::boolean
+        END AS cancer_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND COALESCE(NULL::character varying, i.other_diagnos, ''::character varying)::text <> COALESCE(NULL::character varying, gil.other_diagnos, ''::character varying)::text)) > current_date THEN i.other_diagnos
+            ELSE NULL::character varying
+        END AS other_diagnos_date,
+        CASE
+            WHEN (( SELECT max(gil.date_edit_log) AS max
+               FROM g_incident_log gil
+              WHERE gil.id = i.id AND i.risk_group <> gil.risk_group)) > current_date THEN i.risk_group
+            ELSE NULL::numeric
+        END AS risk_group_date,
+        CASE
+            WHEN (( SELECT max(gpl.date_edit_log) AS max
+               FROM g_patient_log gpl
+              WHERE gpl.id = i.id AND p.lung_damage <> gpl.lung_damage)) > current_date THEN p.lung_damage
+            ELSE NULL::boolean
+        END AS lung_damage_date,
+        CASE
+            WHEN (( SELECT max(gpl.date_edit_log) AS max
+               FROM g_patient_log gpl
+              WHERE gpl.id = i.id AND p.info_cond <> gpl.info_cond)) > current_date THEN p.info_cond
+            ELSE NULL::integer
+        END AS info_cond_date,
+        CASE
+            WHEN (( SELECT max(gpl.date_edit_log) AS max
+               FROM g_patient_log gpl
+              WHERE gpl.id = i.id AND p.info_function <> gpl.info_function)) > current_date THEN p.info_function
+            ELSE NULL::integer
+        END AS info_function_date,
+        CASE
+            WHEN (( SELECT max(g_patient_log.date_edit_log) AS max
+               FROM g_patient_log
+              WHERE g_patient_log.id = p.id AND p.hospitalize_tmc <> g_patient_log.hospitalize_tmc)) > current_date THEN p.p_close_end
+            ELSE NULL::numeric
+        END AS hospitalize_tmc_date,
+        CASE
+            WHEN (( SELECT max(g_patient_log.date_edit_log) AS max
+               FROM g_patient_log
+              WHERE g_patient_log.id = p.id AND g_patient_log.p_close_end <> p.p_close_end)) > current_date THEN p.p_close_end
+            ELSE NULL::numeric
+        END AS close_end_edit,
+    obsv.id,
+    obsv.patient_id,
+    obsv.date,
+    obsv.sore_throat,
+    obsv.nasal_congestion,
+    obsv.shortness_breath,
+    obsv.vomiting,
+    obsv.nausea,
+    obsv.diarrhea,
+    obsv.dry_cough,
+    obsv.palpitations,
+    obsv.debility,
+    obsv.headache,
+    obsv.congestion_chest,
+    obsv.anosmia,
+    obsv.loss_taste,
+    obsv.cough_phlegm,
+    obsv.sweating,
+    obsv.dyspnea,
+    obsv.muscle_pain,
+    obsv.joint_pain,
+    obsv.discharge_eyes_redness,
+    obsv.rash,
+    obsv.comment,
+    obsv.operator_id,
+    obsv.temperature,
+    obsv.systolic,
+    obsv.diastolic,
+    obsv.saturation,
+    obsv.glucose_level,
+    obsv.wellbeing,
+    obsv.home_nabl,
+    obsv.ucl_bribiv,
+    obsv.vipoln_naznach,
+    obsv.vipoln_obzvona,
+    obsv.dostup_ctm,
+    obsv.sostoyznie,
+    obsv.narushen_karantin,
+    obsv.video_call,
+    obsv.jaloba_na_pmsp,
+    obsv.close_end,
+    obsv.p_povtor_pcr,
+    obsv.p_go_street,
+    obsv.p_kt,
+    obsv.p_n_naznachenie,
+    obsv.p_n_list,
+    obsv.p_n_raspiska,
+    obsv.p_n_mb,
+    obsv.p_n_call,
+    obsv.medical_taken,
+    obsv.violation_quar,
+    obsv.violation_descr,
+    obsv.dublicate
+   FROM g_patient p
+     CROSS JOIN g_incident i
+     LEFT JOIN ( SELECT o.id,
+            o.patient_id,
+            o.date,
+            o.sore_throat,
+            o.nasal_congestion,
+            o.shortness_breath,
+            o.vomiting,
+            o.nausea,
+            o.diarrhea,
+            o.dry_cough,
+            o.palpitations,
+            o.debility,
+            o.headache,
+            o.congestion_chest,
+            o.anosmia,
+            o.loss_taste,
+            o.cough_phlegm,
+            o.sweating,
+            o.dyspnea,
+            o.muscle_pain,
+            o.joint_pain,
+            o.discharge_eyes_redness,
+            o.rash,
+            o.comment,
+            o.operator_id,
+            o.temperature,
+            o.systolic,
+            o.diastolic,
+            o.saturation,
+            o.glucose_level,
+            o.wellbeing,
+            o.home_nabl,
+            o.ucl_bribiv,
+            o.vipoln_naznach,
+            o.vipoln_obzvona,
+            o.dostup_ctm,
+            o.sostoyznie,
+            o.narushen_karantin,
+            o.video_call,
+            o.jaloba_na_pmsp,
+            o.close_end,
+            o.p_povtor_pcr,
+            o.p_go_street,
+            o.p_kt,
+            o.p_n_naznachenie,
+            o.p_n_list,
+            o.p_n_raspiska,
+            o.p_n_mb,
+            o.p_n_call,
+            o.medical_taken,
+            o.violation_quar,
+            o.violation_descr,
+            o.dublicate
+           FROM g_observation o
+          WHERE o.date > (current_date - 1 + '01:00:00'::interval) AND (o.date IN ( SELECT __unnamed_subquery_0.mmx
+                   FROM ( SELECT b.patient_id,
+                            ( SELECT max(g_observation.date) AS max
+                                   FROM g_observation
+                                  WHERE g_observation.patient_id = b.patient_id AND g_observation.dublicate = false) AS mmx
+                           FROM g_observation b
+                          GROUP BY b.patient_id, (( SELECT max(g_observation.date) AS max
+                                   FROM g_observation
+                                  WHERE g_observation.patient_id = b.patient_id AND g_observation.dublicate = false))) __unnamed_subquery_0))) obsv ON obsv.patient_id = p.id
+  WHERE p.status > 0::numeric AND i.id = p.incident_id AND i.date_time < (current_date + '01:00:00'::interval) AND (p.close_date_post IS NULL OR p.close_date_post >= (current_date + '01:00:00'::interval));

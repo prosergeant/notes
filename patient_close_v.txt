@@ -1,0 +1,21 @@
+CREATE OR REPLACE VIEW mdc.patient_close_v
+AS SELECT i.date_time AS "Дата регистрации",
+    ms.abrev_rus AS "Название ПМСП",
+    p.iin AS "ИИН",
+    p.fio AS "ФИО",
+    p.phone AS "Телефон",
+    p.pmsp_start_date AS "Дата взятия",
+    p.close_date_post AS "Дата снятия",
+    se.name_ru AS "Причина снятия",
+    p.status_end_description AS "Пояснение",
+    p.id AS p_id,
+    i.id AS incident_id,
+    i.date_time,
+    p.status_end_date,
+    p.close_date_post
+   FROM g_patient p,
+    g_incident i,
+    s_medic_service ms,
+    s_status_end se
+  WHERE p.status = 3::numeric AND i.id = p.incident_id AND p.sign_observation_hospital = false AND ms.bin::text = p.pmsp_name::text AND se.id = p.status_end AND p.close_date_post <= (current_date + '01:00:00'::interval) AND p.close_date_post >= (current_date - 1 + '01:00:00'::interval) AND (p.pmsp_name::text <> ALL (ARRAY['000940003482'::character varying::text, '861240000017'::character varying::text]))
+  ORDER BY p.status_end_date DESC;

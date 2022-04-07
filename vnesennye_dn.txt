@@ -1,0 +1,120 @@
+CREATE OR REPLACE VIEW mdc.vnesennye_dn
+AS SELECT i.date_time AS "Время внесения",
+    ms.abrev_rus AS "Название ПСМП",
+    p.iin AS "ИИН",
+    p.fio AS "ФИО",
+        CASE i.sex
+            WHEN 1 THEN 'муж'::text
+            WHEN 2 THEN 'жен'::text
+            ELSE NULL::text
+        END AS "Пол",
+    i.birthday AS "Дата рождения",
+    p.phone AS "Телефон",
+    sre.name_ru AS "Район",
+    sv.name_ru AS "Село в ч.г.",
+    i.loc_street AS "Улица",
+    i.loc_home AS "Дом",
+    i.loc_block AS "Стр.",
+    i.loc_flat AS "Кв.",
+    srg.name_ru AS "Группа риска",
+        CASE i.ojirenie
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "Ожирение",
+        CASE i.serdce
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "х.б. сердца",
+        CASE i.astma
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "Астма",
+        CASE i.hobl
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "ХОБЛ",
+        CASE i.pechen
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "х.б. печени",
+        CASE i.pochki
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "х.б. почек",
+        CASE i.gema_rast
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "Гемат. растр.",
+        CASE i.pregnancy
+            WHEN 1 THEN '1 триместр'::text
+            WHEN 2 THEN '2 триместр'::text
+            WHEN 3 THEN '3 триместр'::text
+            WHEN 0 THEN 'нет беременности'::text
+            WHEN NULL::numeric THEN 'нет беременности'::text
+            ELSE NULL::text
+        END AS "Берем.",
+    i.other_diagnos AS "Др. заболев.",
+        CASE p.watch_diagnosis
+            WHEN 'U071'::text THEN 'U07.1'::text
+            WHEN 'U072'::text THEN 'U07.2'::text
+            ELSE NULL::text
+        END AS "Диагноз набл.",
+    p.diagnosis_date AS "Дата пост. диагноза",
+    p.pmsp_start_date AS "Дата взятия на ДН",
+    p.date_mobile_brigade AS "Дата выезда МБ",
+    scd.name_ru AS "Сост. пациента",
+        CASE p.pcr_result
+            WHEN true THEN 'Полож.'::text
+            WHEN false THEN 'Отриц.'::text
+            ELSE NULL::text
+        END AS "Рез. ПЦР",
+    p.pcr_date_test AS "Дата теста ПЦР",
+    p.pcr_date_receipt AS "Дата результ. ПЦР",
+        CASE p.pcr_reason
+            WHEN 1 THEN 'Самообращение'::text
+            WHEN 2 THEN 'Проф. мероприятия'::text
+            WHEN 3 THEN 'Контактный'::text
+            ELSE NULL::text
+        END AS "Причина сдачи ПЦР",
+        CASE p.lung_damage
+            WHEN true THEN 'Имеется'::text
+            WHEN false THEN 'Нет'::text
+            ELSE NULL::text
+        END AS "Пневмония",
+        CASE p.result_kt
+            WHEN true THEN 'Выявлен.'::text
+            WHEN false THEN 'Не выявл.'::text
+            ELSE NULL::text
+        END AS "КТ исслед.",
+    p.kt_date AS "Дата КТ",
+    p.diagnosis_kt AS "Диагноз КТ",
+    p.presc_therapy AS "Назначения",
+        CASE p.late_reg_reason
+            WHEN 1 THEN 'Последнее извещение СЭС'::text
+            WHEN 2 THEN 'Последний результат лабораторий'::text
+            WHEN 3 THEN 'Позднее реагирование ПМСП'::text
+            WHEN 4 THEN 'Некорректные данные пациента'::text
+            WHEN 5 THEN 'Самообращение пациента'::text
+            WHEN 6 THEN 'После стационара'::text
+            ELSE NULL::text
+        END AS "Причина поздней подачи"
+   FROM g_patient p,
+    g_incident i,
+    s_medic_service ms,
+    s_region sre,
+    s_risk_group srg,
+    s_condition scd,
+    s_village sv,
+    s_status_end se
+  WHERE p.status > 0::numeric AND i.id = p.incident_id AND p.sign_observation_hospital = false AND ms.bin::text = p.pmsp_name::text AND sre.postal_code::text = i.loc_region::text AND NOT (p.id IN ( SELECT p_1.id
+           FROM g_patient p_1,
+            g_incident i_1
+          WHERE i_1.id = p_1.incident_id AND p_1.status = 3::numeric AND p_1.close_date_post < (current_date + '01:00:00'::interval) AND p_1.close_date_post > (current_date - 1 + '01:00:00'::interval) AND i_1.date_time < (current_date + '01:00:00'::interval) AND i_1.date_time > (current_date - 1 + '01:00:00'::interval))) AND i.date_time < (current_date + '01:00:00'::interval) AND i.date_time > (current_date - 1 + '01:00:00'::interval) AND (p.close_date_post IS NULL OR p.close_date_post > (current_date - 1 + '01:00:00'::interval) OR p.close_date_post < (current_date + '01:00:00'::interval)) AND (p.pmsp_name::text <> ALL (ARRAY['000940003482'::character varying, '861240000017'::character varying]::text[]))
+  ORDER BY i.date_time DESC;
