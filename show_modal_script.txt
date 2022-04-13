@@ -1,0 +1,39 @@
+
+{% if messages %}
+<p id="show_added_patient" data-toggle="modal" data-target="#exampleModalLong" style="visibility: hidden"></p>
+{% endif %}
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content" style="width: 100%;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal_title_id">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="card">
+                Пациент {% for message in messages %}<span>{{ message }}</span>{% endfor %} взят на наблюдение
+            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        {% if messages %}
+        setTimeout(() => {
+            document.getElementById('show_added_patient').click();
+        }, 100)
+        {% endif %}
+        
+       })
+       
+</script>

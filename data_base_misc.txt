@@ -58,6 +58,8 @@ pass: skf_cloud_password
 
 Driver={PostgreSQL Unicode(x64)};Server=91.201.215.27;Port=5432;Database=skf_copy;
 
+github token: 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
+
 #ssh tunel
 ssh -N -L 3336:212.24.36.250:3306 root@95.59.124.142
 
@@ -79,6 +81,11 @@ pg_dump -U powerbi mdc -f dump.sql -h 185.102.73.206 -p 33308 -W -n public -t te
 
 PGPASSWORD="1q2w3e4r_02" pg_dump --no-owner -h 185.102.73.206 -p 33308 -U powerbi mdc -n public -t test_bi_v_copy > file.sql
 
+#рабочий способ с g_patient
+PGPASSWORD="mdc" pg_dump --no-owner --table=g_patient_copy2 --data-only --column-inserts -h 185.102.73.206 -p 33308 -U mdc mdc > g_patient.sql
+
+# замена текста в больших файлов
+sed -i '/old text/ s//new text/g' gigantic_file.sql
 
 # не работают но может пригодится
 pg_dump -C -h 127.0.0.1 -U db_user mdc_local | psql -h 185.102.73.206 -p 33308 -U powerbi mdc
