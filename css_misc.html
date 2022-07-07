@@ -1,0 +1,46 @@
+<!-- 3 elemanta, 1 sleva, 2 sprava -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>misc</title>
+
+    <script type="text/javascript" src="https://demov5_kz.hostedcc.ru/agentdesktop/libs/servicepattern-sdk-v1.js">
+    </script>
+</head>
+
+<body>
+
+    <div class="phys_toolbar">
+        <select placeholder="Введите данные" style="width:20%; min-width: 180px;">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        </select>
+        <div class="phys_toolbar phys_toolbar__second">
+            <input type="text" placeholder="search" />
+            <button class="btn-secondary">
+                Фильтр
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .phys_toolbar {
+            margin: 10px 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .phys_toolbar__second {
+            display: flex;
+            justify-content: flex-end;
+            flex: 1 1 0;
+            grid-gap: 1rem;
+        }
+    </style>
+
+</body>
+
+</html>
